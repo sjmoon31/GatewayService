@@ -1,0 +1,77 @@
+server:
+  port: 8080
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+
+spring:
+  main:
+    web-application-type: reactive
+  application:
+    name: GatewayProject
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: 'http://localhost:3000'
+            allow-credentials: true
+            allowedHeaders:
+              - x-requested-with
+              - authorization
+              - content-type
+              - credential
+              - X-AUTH-TOKEN
+              - X-CSRF-TOKEN
+            allowedMethods:
+              - POST
+              - GET
+              - PUT
+              - PATCH
+              - OPTIONS
+              - DELETE
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway GlobalFilter
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: MemberService # member Service
+          uri: lb://memberProject
+          predicates:
+            - Path=/member/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/member/(?<segment>.*), /$\{segment} # /member 패턴이 들어오면 제거해서 호출
+        - id: ProductService # product Service
+          uri: lb://productProject
+          predicates:
+            - Path=/product/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/product/(?<segment>.*), /$\{segment} # /product 패턴이 들어오면 제거해서 호출
+        - id: OrderService # product Service
+          uri: lb://orderProject
+          predicates:
+            - Path=/order/**
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/order/(?<segment>.*), /$\{segment} # /product 패턴이 들어오면 제거해서 호출
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+auth:
+  service:
+    url: http://localhost:8090
