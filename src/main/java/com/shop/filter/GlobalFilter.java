@@ -26,7 +26,7 @@ public class GlobalFilter extends AbstractGatewayFilterFactory<GlobalFilter.Conf
     private String authServiceUrl; // AuthService의 URL
 
     private final List<String> excludedPaths = List.of(
-            "/member/login", "/member/authenticate", "/member/fileDownload", "/product/main"
+            "/member", "/product/main"
     );
 
     public GlobalFilter(WebClient.Builder webClientBuilder) {
